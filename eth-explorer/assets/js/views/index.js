@@ -3,6 +3,7 @@ const REFRESH_TIMES_OF_OVERVIEW = 1000;         // 개요 정보 갱신 시간 1
 const REFRESH_TIMES_OF_BLOCKS = 5000;           // 블록 정보 갱신 시간 5초
 const REFRESH_TIMES_OF_TRANSACTIONS = 3000;     // 트랜잭션 정보 갱신 시간 3초
 
+
 // 실제 Vue 템플릿 코드 작성 부분
 $(function(){
     var dashboardOverview = new Vue({
@@ -13,10 +14,13 @@ $(function(){
         },
         methods: {
             updateLatestBlock: function(){
-                // TODO              
+                // TODO
+                fetchLatestBlock().then(res => console.log(res));
+                fetchLatestBlock().then(res => this.latestBlock = res);             
             },           
             updateLatestTxCount: function(){
-                // TODO 
+                // TODO
+                web3.eth.getBlockTransactionCount(this.latestBlock).then(res => this.latestTxCount = res);
             }
         },
         mounted: function(){
@@ -37,7 +41,17 @@ $(function(){
         },
         methods: {
             fetchBlocks: function(){
-                // TODO 최근 10개의 블록 정보를 가져와서 계속 업데이트 한다.
+                this.blocks = [];
+                fetchLatestBlock().then(res => {
+                    fetchBlocks(res - 9, res, data => {
+                        var aJson = new Object();
+                        aJson.timestamp = timeSince(data['timestamp']);
+                        aJson.number = data['number'];
+                        aJson.txCount = data['transactions'].length;
+                        JSON.stringify(aJson);
+                        this.blocks.unshift(aJson);
+                    })
+                })
             }
         },
         mounted: function(){
@@ -57,8 +71,32 @@ $(function(){
             transactions: []
         },
         methods: {
-            fetchTxes: function(){
+            fetchTxes: function() {
                 // TODO 최근 블록에 속한 10개의 트랜잭션 정보를 가져와서 계속 업데이트 한다.
+                var that = this;
+                this.transactions = [];
+                fetchLatestBlock().then(res => web3.eth.getBlock(res).then(function (res) {
+                    var size = res['transactions'].length;
+                    if (res['transactions'].length > 10) {
+                        size = 10;
+                    } else {
+                        size = res['transactions'].length
+                    }
+                    for (let i = 0; i < size; i++) {
+                        var aJson = new Object();
+        
+                        aJson.timeSince = timeSince(res['timestamp']);
+        
+                        web3.eth.getTransaction(res['transactions'][i]).then(res => {
+                            aJson.to = res['to'];
+                            aJson.from = res['from'];
+                            aJson.hash = res['hash'];
+        
+                            JSON.stringify(aJson);
+                            that.transactions.unshift(aJson)
+                        });
+                    }
+                }))
             }
         },
         mounted: function(){
