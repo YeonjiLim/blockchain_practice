@@ -14,6 +14,17 @@ $(function(){
         methods: {
             fetchBlocks: function(){
                 // TODO 최근 10개의 블록 정보를 가져와서 계속 업데이트 한다.
+                this.blocks = [];
+                fetchLatestBlock().then(res => {
+                    fetchBlocks(res-9, res, data => {
+                        var aJson = new Object();
+                        aJson.timestamp = timeSince(data['timestamp']);
+                        aJson.number = data['number'];
+                        aJson.txCount = data['transactions'].length;
+                        JSON.stringify(aJson);
+                        this.blocks.unshift(aJson);
+                    })
+                })
             }
         },
         mounted: function(){
