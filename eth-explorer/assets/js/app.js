@@ -1,10 +1,10 @@
 // web3 인스턴스 객체 생성
-const ETH_NET = "https://mainnet.infura.io/v3/be9c13be01a84c678617de2bbc0acf77";
+const ETH_NET = "http://192.168.50.12:8545";
 const web3 = new Web3(ETH_NET);
 
 // 가장 최근 블록 넘버를 비동기로 조회한다. 
 function fetchLatestBlock() {
-    return web3.eth.getBlockNumber();
+  return web3.eth.getBlockNumber();
 }
 
 /*
@@ -36,7 +36,6 @@ function parseQueryString()
 function fetchBlocks(from, end, callback) {
     web3.eth.getBlock(from).then(function(block){
         callback(block);
-
         var f = from += 1;
         if(f <= end) {
             fetchBlocks(f, end, callback);
