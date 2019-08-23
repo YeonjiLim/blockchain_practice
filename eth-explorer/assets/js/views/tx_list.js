@@ -11,6 +11,30 @@ $(function(){
         methods: {
             fetchTxes: function(){
                 // TODO 
+                var that = this;
+                this.transactions = [];
+                fetchLatestBlock().then(res => web3.eth.getBlock(res).then(function (res) {
+                    var size = res['transactions'].length;
+                    if (res['transactions'].length > 10) {
+                        size = 10;
+                    } else {
+                        size = res['transactions'].length
+                    }
+                    for (let i = 0; i < size; i++) {
+                        var aJson = new Object();
+
+                        aJson.timeSince = timeSince(res['timestamp']);
+
+                        web3.eth.getTransaction(res['transactions'][i]).then(res => {
+                            aJson.to = res['to'];
+                            aJson.from = res['from'];
+                            aJson.hash = res['hash'];
+
+                            JSON.stringify(aJson);
+                            that.transactions.unshift(aJson)
+                        });
+                    }
+                }))
             }
         },
         mounted: function(){
